@@ -1,7 +1,0 @@
-c:\users\fcapra\documents\visual studio 2013\Projects\mustacheTemplates\mustacheTemplates\bin\Debug\mustacheTemplates.exe.config
-c:\users\fcapra\documents\visual studio 2013\Projects\mustacheTemplates\mustacheTemplates\bin\Debug\mustacheTemplates.exe
-c:\users\fcapra\documents\visual studio 2013\Projects\mustacheTemplates\mustacheTemplates\bin\Debug\mustacheTemplates.pdb
-c:\users\fcapra\documents\visual studio 2013\Projects\mustacheTemplates\mustacheTemplates\bin\Debug\mustache-sharp.dll
-c:\users\fcapra\documents\visual studio 2013\Projects\mustacheTemplates\mustacheTemplates\obj\Debug\mustacheTemplates.csprojResolveAssemblyReference.cache
-c:\users\fcapra\documents\visual studio 2013\Projects\mustacheTemplates\mustacheTemplates\obj\Debug\mustacheTemplates.exe
-c:\users\fcapra\documents\visual studio 2013\Projects\mustacheTemplates\mustacheTemplates\obj\Debug\mustacheTemplates.pdb
