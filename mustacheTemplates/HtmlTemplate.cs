@@ -4,6 +4,11 @@ namespace mustacheTemplates
 	{
 		public string Template
 		{
+
+
+
+
+
 			get { return @"
 
 <!doctype html>
@@ -79,6 +84,10 @@ namespace mustacheTemplates
 																			<tr>
 																				<td style=""color:#333333; font: 100% Calibri, Verdana, Arial, Helvetica, sans-serif; font-size:14px;"">Amount Sent</td>
 																				<td style=""color:#333333; font: 100% Calibri, Verdana, Arial, Helvetica, sans-serif; font-size:14px;""><b>{{Amount}}</b></td>
+																			</tr>
+																			<tr>
+																				<td style=""color:#333333; font: 100% Calibri, Verdana, Arial, Helvetica, sans-serif; font-size:14px;"">Promotional Discount</td>
+																				<td style=""color:#333333; font: 100% Calibri, Verdana, Arial, Helvetica, sans-serif; font-size:14px;""><b>{{#if Promotional Discount PromotionalDiscount }}{{/if}</b></td>
 																			</tr>
 																			{{/if}}
 																			{{#if IsIld}}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Dynamic;
 using Mustache;
 
@@ -7,7 +8,7 @@ namespace mustacheTemplates
 {
 	class Program
 	{
-		static void Main(string[] args)
+		static void Main()
 		{
 			var orderModel = new Order()
 								{
@@ -20,13 +21,14 @@ namespace mustacheTemplates
 														ProductTypeName = "MobileRecharge",
 														Detail1 = "Mobile Detail 1",
 														Detail2 = "Mobile Detail 2",
-														Amount = new Money{Value = 10.4, Currency = "USD"}
+														Amount = new Money{Value = 10.4, Currency = "USD"},
+														PromotionalDiscount = "100 USD"
 													},
 													new OrderItem
 													{
 														ProductTypeName = "ILDTopup",
 														Detail1 = "ILD Detail 1",
-														Detail2 = "ILD Detail 2"
+														Detail2 = "ILD Detail 2",
 													},
 													new OrderItem
 													{
@@ -47,6 +49,12 @@ namespace mustacheTemplates
 
 			FormatCompiler compiler = new FormatCompiler();
 			Generator generator = compiler.Compile(template.Template);
+			generator.KeyNotFound += (obj, args) =>
+									{
+										args.Substitute = string.Empty;
+										args.Handled = true;
+									};
+
 			string result = generator.Render(MyConvert.DictionaryToDynamic(dict));
 
 			Console.ReadKey();
@@ -67,6 +75,15 @@ namespace mustacheTemplates
 
 			return eo;
 		}
+
+		public static dynamic ToDynamicObject()
+		{
+			dynamic model = new MyDynamic();
+			model.Value1 = "Test";
+			model.Value2 = "Test";
+
+			return model;
+		}
 	}
 
 
@@ -83,6 +100,7 @@ namespace mustacheTemplates
 		public string ProductTypeName { get; set; }
 		public string Detail1 { get; set; }
 		public string Detail2 { get; set; }
+		public string PromotionalDiscount { get; set; }
 		public Money Amount { get; set; }
 
 		public bool IsMobileRecharge { get { return ProductTypeName == "MobileRecharge"; } }
@@ -100,4 +118,39 @@ namespace mustacheTemplates
 			return string.Format("{0} {1}", Value, Currency);
 		}
 	}
+
+	public class MyDynamic : DynamicObject
+	{
+		private readonly StringDictionary properties;
+
+		public MyDynamic()
+		{
+			properties = new StringDictionary();
+		}
+
+		public override bool TrySetMember(SetMemberBinder binder, object value)
+		{
+			var propertyName = binder.Name;
+
+			if (properties.ContainsKey(propertyName))
+				properties[propertyName] = value.ToString();
+			else
+				properties.Add(propertyName, value.ToString());
+				
+			return true;
+		}
+
+		public override bool TryGetMember(GetMemberBinder binder, out object result)
+		{
+			var propertyName = binder.Name;
+
+			result = properties.ContainsKey(propertyName)
+				? properties[propertyName]
+				: string.Empty;
+
+			return true;
+		}
+
+	}
+
 }

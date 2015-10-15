@@ -6,7 +6,7 @@
 		{
 			get { return @"
 {{Value1}}
-
+{{Value2}}
 "; }
 		}
 	}
