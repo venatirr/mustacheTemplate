@@ -48,6 +48,11 @@ namespace mustacheTemplates
 			ITemplate template = new SimpleTemplate();
 
 			FormatCompiler compiler = new FormatCompiler();
+			compiler.PlaceholderFound += (sender, args) =>
+										{
+											var x = 1;
+										};
+
 			Generator generator = compiler.Compile(template.Template);
 			generator.KeyNotFound += (obj, args) =>
 									{
@@ -56,8 +61,6 @@ namespace mustacheTemplates
 									};
 
 			string result = generator.Render(MyConvert.DictionaryToDynamic(dict));
-
-			Console.ReadKey();
 		}
 	}
 
