@@ -45,15 +45,13 @@ namespace mustacheTemplates
 						};
 
 
-			ITemplate template = new SimpleTemplate();
+			ITemplate template = new TextTemplate();
 
 			FormatCompiler compiler = new FormatCompiler();
-			compiler.PlaceholderFound += (sender, args) =>
-										{
-											var x = 1;
-										};
 
-			Generator generator = compiler.Compile(template.Template);
+			var templateParser = new MustacheTemplateConverter();
+
+			Generator generator = compiler.Compile(templateParser.ConvertDingConditionalToMustache(template.Template));
 			generator.KeyNotFound += (obj, args) =>
 									{
 										args.Substitute = string.Empty;
@@ -61,6 +59,8 @@ namespace mustacheTemplates
 									};
 
 			string result = generator.Render(MyConvert.DictionaryToDynamic(dict));
+
+			Console.ReadKey();
 		}
 	}
 
@@ -88,8 +88,7 @@ namespace mustacheTemplates
 			return model;
 		}
 	}
-
-
+	
 	public class Order
 	{
 		public string Name { get; set; }
