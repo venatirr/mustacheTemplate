@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Dynamic;
+using System.IO;
+using System.Text.RegularExpressions;
 using Mustache;
 
 namespace mustacheTemplates
@@ -10,6 +12,9 @@ namespace mustacheTemplates
 	{
 		static void Main()
 		{
+			TestExistingTemplates.Test();
+
+
 			var orderModel = new Order()
 								{
 									Name = "Bob's order",
@@ -88,7 +93,7 @@ namespace mustacheTemplates
 			return model;
 		}
 	}
-	
+
 	public class Order
 	{
 		public string Name { get; set; }
@@ -138,7 +143,7 @@ namespace mustacheTemplates
 				properties[propertyName] = value.ToString();
 			else
 				properties.Add(propertyName, value.ToString());
-				
+
 			return true;
 		}
 
@@ -153,6 +158,45 @@ namespace mustacheTemplates
 			return true;
 		}
 
+	}
+
+
+	public class TestExistingTemplates
+	{
+		public static void Test()
+		{
+			return;
+
+			var files = Directory.GetFiles("ToTest");
+			var templateParser = new MustacheTemplateConverter();
+
+			Console.WriteLine("Number of files {0}", files.Length);
+
+
+
+			var i = 0;
+			foreach (var file in files)
+			{
+
+				Console.WriteLine("Testing {0}", file);
+
+				var content = File.ReadAllText(file);
+
+				var xx = new Regex(Regex.Escape("[?")).Matches(content).Count;
+
+				var temp = templateParser.ConvertDingConditionalToMustache(content);
+
+				if (temp.Contains("[?") || temp.Contains("?]"))
+					throw new Exception("Conversion failed");
+
+				Console.WriteLine("Tested {0} files", i++);
+
+
+			}
+
+			Console.WriteLine("Tested all files");
+
+		}
 	}
 
 }
