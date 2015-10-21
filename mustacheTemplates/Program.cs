@@ -12,8 +12,9 @@ namespace mustacheTemplates
 	{
 		static void Main()
 		{
-			TestExistingTemplates.Test();
 
+			//testing
+			//TestExistingTemplates.Test();
 
 			var orderModel = new Order()
 								{
@@ -50,13 +51,14 @@ namespace mustacheTemplates
 						};
 
 
-			ITemplate template = new TextTemplate();
+			ITemplate template = new HtmlTemplate();
 
 			FormatCompiler compiler = new FormatCompiler();
 
 			var templateParser = new MustacheTemplateConverter();
 
-			Generator generator = compiler.Compile(templateParser.ConvertDingConditionalToMustache(template.Template));
+			var convertDingConditionalToMustache = templateParser.ConvertDingConditionalToMustache(template.Template);
+			Generator generator = compiler.Compile(convertDingConditionalToMustache);
 			generator.KeyNotFound += (obj, args) =>
 									{
 										args.Substitute = string.Empty;
@@ -165,18 +167,15 @@ namespace mustacheTemplates
 	{
 		public static void Test()
 		{
-			return;
-
 			var files = Directory.GetFiles("ToTest");
 			var templateParser = new MustacheTemplateConverter();
 
 			Console.WriteLine("Number of files {0}", files.Length);
 
-
-
 			var i = 0;
 			foreach (var file in files)
 			{
+				//var xfile = "ToTest\\DotCom_Ding_IldTopupSuccessfulAfterRiskAccepted_en-us_2015-10-16_11-35.json";
 
 				Console.WriteLine("Testing {0}", file);
 

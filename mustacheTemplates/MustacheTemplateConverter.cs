@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace mustacheTemplates
 {
@@ -9,13 +10,15 @@ namespace mustacheTemplates
 	{
 		private const string startDingConditional = "[?";
 		private const string endDingConditional = "?]";
+		private const string tmpStartDingConditional = "[[";
+		private const string tmpEndDingConditional = "]]";
 		private const string startMustacheConditional = "{{{{#if {0}}}}}";
 		private const string endMustacheConditional = "{{/if}}";
 		private const string mustacheSuffix = "Mustache";
 		private const string startToken = "{{";
 		private const string endToken = "}}";
 
-		readonly List<string> conditionalTokens = new List<string>();
+		private List<string> conditionalTokens = new List<string>();
 
 		public string ConvertDingConditionalToMustache(string template)
 		{
@@ -49,29 +52,17 @@ namespace mustacheTemplates
 
 		private List<string> GetConditionalTokens(string template)
 		{
-			conditionalTokens.Clear();
 
-			List<string> allConditionals = ExtractFromString(template, startDingConditional, endDingConditional);
+			conditionalTokens = GetAllTokens(template);
 
-			foreach (var conditional in allConditionals)
-			{
-				var tokens = ExtractFromString(conditional, startToken, endToken);
-				foreach (var token in tokens.Where(token => !conditionalTokens.Contains(token)))
-				{
-					conditionalTokens.Add(token);
-				}
-			}
-
-			return conditionalTokens
-				.Select(token => ("{{" + token + "}}"))
-				.ToList();
+			return conditionalTokens;
 		}
 
 		private string ReplaceDingConditionalWithMustacheOne(string template, string token, string expressionToEvaluate)
 		{
 			if (template == null || token == null) return template;
 
-			var tokenWithoutbrakets = TokenWithoutBrakets(token);
+			var tokenWithoutBrackets = TokenWithoutBrakets(token);
 
 			var indexOfToken = template.IndexOf(token, StringComparison.InvariantCultureIgnoreCase);
 			if (indexOfToken <= 0) return template;
@@ -79,26 +70,89 @@ namespace mustacheTemplates
 			var indexOfStartDingSeparator = template.LastIndexOf(startDingConditional, indexOfToken, StringComparison.InvariantCultureIgnoreCase);
 			if (indexOfStartDingSeparator < 0)
 			{
-				template = template.Replace(tokenWithoutbrakets, tokenWithoutbrakets + mustacheSuffix);
+				template = ReplaceToken(template, token, tokenWithoutBrackets);
 				return template;
 			}
 
 			var indexOfEndDingSeparator = template.IndexOf(endDingConditional, indexOfToken, StringComparison.InvariantCultureIgnoreCase) + endDingConditional.Length;
 			if (indexOfEndDingSeparator < indexOfStartDingSeparator)
 			{
-				template = template.Replace(tokenWithoutbrakets, tokenWithoutbrakets + mustacheSuffix);
+				template = ReplaceToken(template, token, tokenWithoutBrackets);
 				return template;
 			}
 
 			var originalDingSnippet = template.Substring(indexOfStartDingSeparator, indexOfEndDingSeparator - indexOfStartDingSeparator);
-		
-			var alteredDingSnippet = originalDingSnippet.Replace(tokenWithoutbrakets, tokenWithoutbrakets + mustacheSuffix);
+
+			var lastNestedEndOfDingSeparator = CalculateLastNestedEndOfDingSeparator(template, originalDingSnippet, indexOfToken);
+
+			string alteredDingSnippet;
+			if (indexOfEndDingSeparator != lastNestedEndOfDingSeparator && lastNestedEndOfDingSeparator > indexOfEndDingSeparator)
+			{
+				var nestedAlteredDingSnippet = template.Substring(indexOfStartDingSeparator, lastNestedEndOfDingSeparator - indexOfStartDingSeparator);
+				nestedAlteredDingSnippet = ReplaceNestedDingConditionals(nestedAlteredDingSnippet);
+				alteredDingSnippet = ReplaceFirstOccurence(nestedAlteredDingSnippet, tokenWithoutBrackets, tokenWithoutBrackets + mustacheSuffix);
+
+				originalDingSnippet = template.Substring(indexOfStartDingSeparator, lastNestedEndOfDingSeparator - indexOfStartDingSeparator);
+			}
+			else
+			{
+				alteredDingSnippet = ReplaceToken(originalDingSnippet, token, tokenWithoutBrackets);
+			}
+
 			var mustacheSnippet = BuildMustacheConditional(alteredDingSnippet, expressionToEvaluate);
+			mustacheSnippet = RestoreDingConditionals(mustacheSnippet);
 
 			StringBuilder sb = new StringBuilder(template);
 			sb = sb.Replace(originalDingSnippet, mustacheSnippet);
 
 			return sb.ToString();
+		}
+
+		private string RestoreDingConditionals(string mustacheSnippet)
+		{
+			var sb = new StringBuilder(mustacheSnippet);
+			sb = sb
+				.Replace(tmpStartDingConditional, startDingConditional)
+				.Replace(tmpEndDingConditional, endDingConditional);
+
+			return sb.ToString();
+		}
+
+		private string ReplaceNestedDingConditionals(string originalDingSnippet)
+		{
+			var sb = originalDingSnippet.Substring(startDingConditional.Length, originalDingSnippet.Length - startDingConditional.Length - endDingConditional.Length);
+			sb = sb
+				.Replace(startDingConditional, tmpStartDingConditional)
+				.Replace(endDingConditional, tmpEndDingConditional);
+
+			return string.Format("{0} {1} {2}", startDingConditional, sb, endDingConditional);
+		}
+
+		private int CalculateLastNestedEndOfDingSeparator(string template, string originalDingSnippet, int indexOfToken)
+		{
+			var numberOfNested = new Regex(Regex.Escape(startDingConditional)).Matches(originalDingSnippet).Count;
+
+			var indexOfEndDingSeparator = NthIndexOf(template, endDingConditional, numberOfNested) + endDingConditional.Length;
+
+			return indexOfEndDingSeparator;
+		}
+
+		private static int NthIndexOf(string target, string value, int n)
+		{
+			Match m = Regex.Match(target, "((" + Regex.Escape(value) + ").*?){" + n + "}");
+
+			if (m.Success)
+				return m.Groups[2].Captures[n - 1].Index;
+			else
+				return -1;
+		}
+
+		private string ReplaceFirstOccurence(string source, string oldValue, string newValue)
+		{
+			var regex = new Regex(Regex.Escape(oldValue));
+			var newText = regex.Replace(source, newValue, 1);
+
+			return newText;
 		}
 
 		private string BuildMustacheConditional(string dingSnippet, string expressionToEvaluate)
@@ -129,7 +183,7 @@ namespace mustacheTemplates
 			return sb.ToString();
 		}
 
-		private static List<string> ExtractFromString(string text, string startString, string endString)
+		private List<string> ExtractFromString(string text, string startString, string endString)
 		{
 			List<string> matched = new List<string>();
 			int indexStart = 0, indexEnd = 0;
@@ -149,6 +203,24 @@ namespace mustacheTemplates
 					exit = true;
 			}
 			return matched;
+		}
+
+		private string ReplaceToken(string source, string token, string tokenWithoutBrackets)
+		{
+			return source.Replace(token, string.Format("{{{{{0}{1}}}}}", tokenWithoutBrackets, mustacheSuffix));
+		}
+
+		private List<string> GetAllTokens(string source)
+		{
+			Regex regex = new Regex("{{(.*?)}}");
+			var matches = regex.Matches(source);
+
+			List<string> list = new List<string>();
+			foreach (object match in matches.Cast<object>().Where(match => !list.Contains(match.ToString())))
+			{
+				list.Add(match.ToString());
+			}
+			return list;
 		}
 	}
 }

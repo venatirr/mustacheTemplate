@@ -5,8 +5,12 @@
 		public string Template
 		{
 			get { return @"
-{{Value1}}
-{{Value2}}
+
+
+[? {{test1}} valid conditional [? {{test2}} conditional inside another conditional [? {{test3}} conditional inside another conditional ?] ?]  ?]
+
+
+
 "; }
 		}
 	}

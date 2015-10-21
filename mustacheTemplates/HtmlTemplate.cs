@@ -127,7 +127,7 @@ img { display: block; }
                                                                         <tr>
                                                                             <td>
                                                                             	[?<table class=""cellFloat"" align=""left"" width=""40%"" style=""color:#4c4c4c; font: 100% Arial, Helvetica, sans-serif; font-size:16px;  min-width:200px;""><tbody><tr><td style=""text-align:left;""></td></tr></tbody></table>
-                                                                            	<table class=""cellFloat"" align=""left"" width=""60%"" style=""color:#4c4c4c; font: 100% Arial, Helvetica, sans-serif; font-size:16px;  min-width:200px;""><tbody><tr><td style=""text-align:left;""><b>{{ReceivedTopUpAmountExTaxToDestinationCountry}} (Mobile TopUp)</b></td></tr></tbody></table>?]
+                                                                            	<table class=""cellFloat"" align=""left"" width=""60%"" style=""color:#4c4c4c; font: 100% Arial, Helvetica, sans-serif; font-size:16px;  min-width:200px;""><tbody><tr><td style=""text-align:left;""><b>{{ReceivedTopUpAmountExTaxToDestinationCountry}} (Mobile TopUp)  test nesting [? inc. {{TaxName}}?]  </b></td></tr></tbody></table>?]
                                                                             </td>
                                                                         </tr>
                                                                         <tr>
